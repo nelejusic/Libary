@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  
+</head>
+<body>
+<div id="header"></div>
+<div class="container">
+    <div class="container" id="books">
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Available Copies</th>
+                <th>Delete</th>
+            </tr>
+            </thead>
+            <tbody id="table-body">
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="confimDeletion" tabindex="-1" role="dialog" aria-labelledby="confirmDeletion" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Delete book</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteBook()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function loadTable(){
+    console.log("test");
+    $.ajax({
+        type: 'GET',
+        url: '/api/book',
+        data: {
+            format: 'json'
+        },
+        error: function() {
+            var $error = $('<h1>').text('An error has occurred');
+            $('#books').append($error);
+        },
+        dataType: 'json',
+        success: function(data) {
+            $('#table-body').empty();
+            data.forEach(element => {
+                var tr = $('<tr></tr>');
+                var id = $('<td></td>').text(element.id);
+                var title = $('<td></td>').text(element.title);
+                var author = $('<td></td>').text(element.author);
+                var copies = $('<td></td>').text(element.availableCopies);
+                var deleteRow = $('<td></td>');
+                var deleteButton = $("<button type='button' class='btn btn-danger btn-sm' onclick ='showDeleteBookDialog("+element.id+")'>Delete</button>");
+                deleteRow.append(deleteButton);
+                tr.append(id);
+                tr.append(title);
+                tr.append(author);
+                tr.append(copies);
+                tr.append(deleteRow);
+                $('#table-body').append(tr);
+            });
+
+        }
+    });
+}
+function showDeleteBookDialog(id){
+    $("#confimDeletion").modal("show");
+    selectedBook = id;
+}
+function deleteBook(){
+    console.log("delete : " + id);
+    $.ajax({
+        type: 'DELETE',
+        url: '/api/stories/publish/'+id,
+        error: function() {
+            var $error = $('<h1>').text('An error has occurred');
+            $('#books').append($error);
+        },
+        success: function(data) {
+            loadTable();
+        }
+    });
+}
+$(document).ready(function(){
+     $("#header").load("components/header.html");
+});
+$(document).ready(function(){
+    loadTable();
+});
+</script>
+</body>
+</html>
